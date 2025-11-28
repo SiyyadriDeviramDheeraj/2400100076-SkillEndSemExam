@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Course Drag & Drop</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      width: 300px;
+    }
+    li {
+      padding: 10px;
+      margin-bottom: 8px;
+      background: #f1f1f1;
+      border: 1px solid #ccc;
+      cursor: grab;
+    }
+    li.dragging {
+      opacity: 0.5;
+    }
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+      color: #2d7a2d;
+    }
+    #instructions {
+      color: #444;
+      margin-bottom: 15px;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Course List (Drag to Rearrange)</h2>
+
+  <div id="instructions">
+    Instead of selecting, you must drag the courses to rearrange them.  
+    After dropping, the updated course order will appear below.
+  </div>
+
+  <ul id="courseList">
+    <li draggable="true">Mathematics</li>
+    <li draggable="true">Physics</li>
+    <li draggable="true">Front end</li>
+    <li draggable="true">AIML</li>
+    <li draggable="true">OOPS</li>
+  </ul>
+
+  <div id="result">Updated Order: Mathematics, Physics, Front end, AIML, OOPS</div>
+
+  <script>
+    const list = document.getElementById("courseList");
+    let draggingItem = null;
+
+    list.addEventListener("dragstart", e => {
+      draggingItem = e.target;
+      e.target.classList.add("dragging");
+    });
+
+    list.addEventListener("dragend", e => {
+      e.target.classList.remove("dragging");
+      updateOrder();
+    });
+
+    list.addEventListener("dragover", e => {
+      e.preventDefault();
+      const afterEl = getDragAfterElement(list, e.clientY);
+      if (afterEl == null) {
+        list.appendChild(draggingItem);
+      } else {
+        list.insertBefore(draggingItem, afterEl);
+      }
+    });
+
+    function getDragAfterElement(container, y) {
+      const items = [...container.querySelectorAll("li:not(.dragging)")];
+
+      return items.reduce(
+        (closest, child) => {
+          const box = child.getBoundingClientRect();
+          const offset = y - box.top - box.height / 2;
+          if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+          } else {
+            return closest;
+          }
+        },
+        { offset: Number.NEGATIVE_INFINITY }
+      ).element;
+    }
+
+    function updateOrder() {
+      const items = [...document.querySelectorAll("#courseList li")];
+      const order = items.map(i => i.textContent).join(", ");
+      document.getElementById("result").textContent = "Updated Order: " + order;
+    }
+  </script>
+
+</body>
+</html>
